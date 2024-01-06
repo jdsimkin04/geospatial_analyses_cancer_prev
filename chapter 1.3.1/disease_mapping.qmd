@@ -1,0 +1,140 @@
+---
+title: "Integrating geospatial analysis in cancer surveillance"
+format: html
+editor: visual
+---
+
+# Libraries
+
+```{r}
+library(tidyverse)
+library(sf)
+library(tmap)
+library(magrittr)
+```
+
+```{r}
+data <- read_csv("disease mapping/data/data.csv")
+```
+
+Tmap is super handy, it comes with a world dataset already
+
+```{r}
+data("World")
+```
+
+Let's look at the data
+
+```{r}
+World %>% 
+  st_drop_geometry() %>% 
+  str()
+```
+
+map out the world with tmap
+
+```{r}
+tm_shape(World) +
+  tm_polygons()
+```
+
+Now we have to link the data from the map and the globocan data. We are also going to check that countries that have an NA value in the linked dataset are not an NA value by error but that the data was missing originally.
+
+```{r}
+# Joining the "World" dataset with the "data" dataset using the "iso_a3" column
+world_linked <- World %>%
+  left_join(., data %>% rename(iso_a3 = "ISO code"), by = "iso_a3")
+
+# Extracting countries with missing "Value" (assuming it's a column)
+na_countries <-
+  world_linked %>% 
+  st_drop_geometry() %>%
+  # Extracting distinct combinations of "name" and "Value"
+  distinct(name, Value) %>%
+  # Filtering for countries where "Value" is missing
+  filter(is.na(Value )) %$% 
+  name
+
+# Filtering the "data" dataset for countries with populations matching the list of countries with missing "Value"
+data %>%
+  filter(Population %in% c(na_countries))
+# we see that these countries don't exist in this dataset, which is why they are NA
+```
+
+Ok we are ready to recreate our map
+
+```{r}
+# Create a thematic map using the "world_linked" dataset
+tm_shape(world_linked) + 
+
+  # Add polygon layer with Value variable mapped to color
+  tm_polygons("Value",
+              title = "ASMR per 100,000",  # Title for the legend
+              palette = "Reds",             # Color palette
+              style = "jenks",              # Classification method
+              n = 5,                        # Number of breaks
+              border.col = "black",         # Border color
+              lwd = 0.25) +                # Border line width
+  
+  # Customize the map layout
+  tm_layout(
+    main.title = "Estimated age-standardized mortality rates (World) in 2020 cervix uteri, females, all ages",  # Main title
+    main.title.position = c('left', 'top'),  # Position of the main title
+    main.title.size = 1,                     # Size of the main title
+    frame = F,                               # Remove map frame
+    # legend.outside = T,                    # Place legend outside the map (commented out)
+    legend.position = c(0, 0.15)             # Position of the legend
+)
+```
+
+```{r}
+plot <-
+tm_shape(world_linked) + 
+
+  # Add polygon layer with Value variable mapped to color
+  tm_polygons("Value",
+              title = "ASMR per 100,000",  # Title for the legend
+              palette = "Reds",             # Color palette
+              style = "jenks",              # Classification method
+              n = 5,                        # Number of breaks
+              border.col = "black",         # Border color
+              lwd = 0.25) +                # Border line width
+  
+  # Customize the map layout
+  tm_layout(
+    main.title = "Estimated age-standardized mortality rates (World) in 2020 cervix uteri, females, all ages",  # Main title
+    main.title.position = c('left', 'top'),  # Position of the main title
+    main.title.size = 1,                     # Size of the main title
+    frame = F,                               # Remove map frame
+    # legend.outside = T,                    # Place legend outside the map (commented out)
+    legend.position = c(0, 0.15)             # Position of the legend
+) 
+tmap_save(tm = plot, filename = "world_map_example.png", dpi = 300)
+```
+
+```{r}
+world_linked %>% 
+  st_drop_geometry()
+```
+
+```{r}
+# Create a ggplot scatterplot with log-transformed HPI
+scatterplot <- world_linked %>%
+  st_drop_geometry() %>%  # Drop spatial attributes
+  mutate(log_HPI = log(HPI)) %>%  # Log-transform the HPI variable
+  ggplot(aes(x = log_HPI, y = Value)) +
+  geom_point(shape = 21, size = 2 , aes(fill = continent)) +  # Add scatterplot points\
+    geom_smooth(method = "lm", se = FALSE, colour= "black", lty = 2) +  # Add a regression line without confidence intervals
+
+  labs(
+    x = "Log(Human Poverty Index) (log HPI)",
+    y = "ASMR per 100,000",
+    title = "Scatterplot of Log(HPI) vs. ASMR per 100,000",
+    subtitle = "With Regression Line"
+  ) +
+  theme_minimal()  # Customize the plot theme as needed
+
+# Display the scatterplot
+scatterplot
+ggsave("scatterplot.png", plot = scatterplot, device = "png", dpi = 300)
+```
