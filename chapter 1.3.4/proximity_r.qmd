@@ -1,0 +1,102 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+# Load appropriate libraries
+library(sf)
+library(tmap)
+library(tidyverse)
+library(osrm)
+# library(tmaptools)
+# library(rmapshaper)
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Create random set of 200 random point locations representing patients' addresses in British Columbia, Canada
+# Create bounding box for Kansas
+bbox_kansas <- st_bbox(c(xmin = -102.0517, xmax = -94.5886, ymin = 36.9931, ymax = 40.0034), crs = 4326)
+
+# Generate 200 random patient points
+patients <- st_sample(st_as_sfc(bbox_kansas), 200)
+
+# Generate 10 random facility points
+facilities <- st_sample(st_as_sfc(bbox_kansas), 10)
+
+# Map the cases and health care facilities using tmap and sf
+tmap_mode("view")
+basemap <- tm_basemap(server = "OpenStreetMap")
+tm_shape(patients) + 
+  tm_dots() + 
+  tm_shape(facilities) + 
+  tm_dots(col = "red") +
+  tm_basemap(server = "OpenStreetMap")
+
+# Calculate the drive times for each patient to each health facility using the osrm package
+# Note: This step requires an internet connection as it uses the OSRM API
+drive_times <- osrmTable(
+  src = st_coordinates(patients),
+  dst = st_coordinates(facilities)
+  # returnclass = "sf"
+)$durations
+
+# Create a data frame for ggplot
+drive_times_df <- data.frame(drive_times)
+
+# select the closest drive time
+drive_times_df_closest <-
+drive_times_df %>% 
+  mutate(id = row_number()) %>% 
+  select(id, everything()) %>% 
+  pivot_longer(
+    cols = c(2:11),
+    names_to = "facility",
+    values_to = "drive_time"
+  ) %>% 
+  arrange(id, drive_time) %>% 
+  distinct(id, .keep_all = T)
+
+# Create boxplot with ggplot
+plot <-
+ggplot(drive_times_df_closest, aes(y = drive_time)) +
+  geom_boxplot() +
+  labs(title = "Drive Times to Nearest Facility",
+       x = "Study cohort",
+       y = "Drive Time") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
+plot
+# ggsave("boxplot.png", plot, device = "png", dpi = 300, bg = "white", height = 5, width = 8)
+```
+
+```{r}
+# Generate isochrones
+isochrones <- osrmIsochrone(loc = facilities[1],
+                                   breaks = seq(20, 90, by = 20),
+                                   res = 50,
+                                   osrm.profile = "car")
+`
+# Convert isochrone result to sf object
+isochrones_sf <- st_as_sf(isochrones)
+# Check and fix invalid geometries
+isochrones_sf <- sf::st_make_valid(isochrones_sf)
+
+basemap <- tm_basemap(server = "OpenStreetMap")
+
+tmap_mode("view")
+# Plot the isochrones
+tm_shape(isochrones_sf) +
+  tm_fill(col = "isomax", palette = "Blues", alpha = 0.5) +
+  tm_borders() +
+  tm_shape(facilities[1]) +
+  tm_dots(col = "red", size = 0.1) +
+  tm_layout(legend.show = TRUE) +
+  tm_basemap(server = "OpenStreetMap")
+
+```

@@ -1,0 +1,143 @@
+---
+title: "Spatial join"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: console
+---
+Step 1: Load Required Libraries
+In this step, we load the necessary R libraries for data manipulation, geospatial analysis, and visualization.
+
+```{r}
+# Load the necessary libraries
+library(tidyverse)
+library(sf)
+library(tmap)
+library(tmaptools)
+library(kableExtra)
+library(rmapshaper)
+```
+
+Step 2: Download and Unzip the Shapefile
+Here, we download the British Columbia (BC) Community Health Service Area (CHSA) shapefile from a specified URL and unzip it into a folder named 'map.'
+
+If this doesn’t work, you can download the shapefile from the BC Government Open Data Catalogue directly and load it into R: https://catalogue.data.gov.bc.ca/dataset/community-health-service-areas-chsa.
+
+```{r}
+# Define the URL for downloading the BC CHSA shapefile
+url <- " https://catalogue.data.gov.bc.ca/dataset/68f2f577-28a7-46b4-bca9-7e9770f2f357/resource/f89f99b0-ca68-41e2-afc4-63fdc0edb666/download/chsa_2018.zip"
+# Download and unzip the shapefile into a folder called 'map'
+download.file(url, "chsa_2018.zip")
+unzip("chsa_2018.zip", exdir = paste0(getwd(), "/map"))
+
+#alternative
+chsa <-
+st_read("chapter 1.3.4/BCGW_7113060B_1699795980729_10712/BCHA_CMNTY_HEALTH_SERV_AREA_SP/CHSA_polygon.shp")
+```
+
+Step 3: Visualize the CHSA Map
+We read the CHSA shapefile, make it valid, transform its coordinate reference system (CRS) to a specified CRS (4326), and simplify the shape for better performance. Then, we create a thematic map using the tmap package to visualize the CHSA map.
+
+```{r}
+# Read the CHSA shapefile, make it valid, transform the CRS, and simplify the shape
+chsa <- 
+  chsa %>% 
+  st_make_valid() %>%
+  st_transform(., crs = 4326) %>%
+  simplify_shape(.)
+
+# Visualize the CHSA map
+tmap_mode("view")
+tm_shape(chsa) +
+  tm_polygons("HSDA_NM",
+              id = "CHSA_NM",
+              palette = "PRGn",
+              legend.show = FALSE)
+```
+
+Step 4: Explore the CHSA Data
+In this step, we examine the attributes within the CHSA shapefile to understand its structure and available variables, focusing on the "CHSA_UR_Cl" variable.
+```{r}
+# Examine the data elements within the CHSA shapefile; focus on CHSA_UR_Cl, the rural-urban classification
+chsa %>%
+  st_drop_geometry() %>%
+  str()
+```
+
+Step 5: Visualize CHSA Urbanization Classification
+We explore the "CHSA_UR_Cl" variable more closely and create a thematic map to visualize the rural-urban classification across CHSAs.
+```{r}
+# Let's explore the CHSA_UR_Cl variable in more detail and visualize it
+chsa %>%
+  st_drop_geometry() %>%
+  count(CHSA_UR_CL) %>%
+  mutate(proportion = round(n / sum(n) * 100, 1))
+
+tmap_mode("view")
+tm_shape(chsa) +
+  tm_polygons("CHSA_UR_CL",
+              id = "CHSA_NM",
+              palette = "PRGn")
+```
+
+Step 6: Create Sample Point Data
+We generate a sample of point data that represent study participants. This data contains geographical coordinates (longitude and latitude).
+```{r}
+# Generate sample point data representing study participants
+spatial_point_data <- tibble(
+  case_id = c(1:10),
+  long = c(-122.79245404269491, -122.50750051771003, -121.47061705091572, -120.78489105416672, -119.46708958311152, -122.12044919737846, -123.9735411710232, -127.48038830551505, -122.66126844286325, -131.11218885196038),
+  lat = c(49.1152475836367, 49.117737238190344, 49.38845365756505, 50.09960249743014, 49.87203980873458, 52.13143107578074, 49.130988612031395, 50.69492877221613, 58.80790367189857, 57.88986797544227)
+) %>%
+  st_as_sf(., coords = c("long", "lat"), crs = 4326, agr = "constant") %>%
+  st_transform(., crs = 4326)
+```
+
+Step 7: Visualize the Point Data
+We create a thematic map to visualize the sample point data on the map.
+```{r}
+# Visualize the point data
+tmap_mode("view")
+tm_shape(spatial_point_data) +
+  tm_dots(size = 0.1, col = "black")
+```
+
+Step 8: Overlay Point Data on the CHSA Map
+We overlay the sample point data on top of the CHSA map to visualize their spatial relationship.
+```{r}
+# Overlay the point data on the CHSAs to visualize the spatial relationship
+tmap_mode("view")
+tm_shape(chsa) +
+  tm_polygons("HSDA_NM",
+              id = "CHSA_NM",
+              palette = "PRGn",
+              legend.show = FALSE) +
+  tm_shape(spatial_point_data) +
+  tm_dots(size = 0.2, col = "black")
+```
+
+Step 9: Spatial Join - Link CHSA Rural-Urban Class to Point Data
+We perform a spatial join to link the CHSA rural-urban classification to the point data. We use the st_intersects function for this purpose.
+```{r}
+# Perform a spatial join to link CHSA rural-urban classifications to the point data
+int <- st_intersects(spatial_point_data, chsa, prepared = TRUE)
+
+linked_data <- spatial_point_data %>%
+  mutate(
+    CHSA_Name = as.character(chsa$CHSA_NM[as.numeric(as.character(int))]),
+    CHSA_UR_Cl = as.character(chsa$CHSA_UR_CL[as.numeric(as.character(int))]),
+    LHA_Name = as.character(chsa$LHA_NM[as.numeric(as.character(int))]),
+    HSDA_Name = as.character(chsa$HSDA_NM[as.numeric(as.character(int))]),
+    HA_Name = as.character(chsa$HA_NM[as.numeric(as.character(int))])
+  ) %>%
+  st_drop_geometry() # Remove geometry information for easier data analysis
+```
+
+Step 10: Display the Linked Data in a Table
+We display the final linked dataset as a table using the kable and kableExtra libraries.
+```{r}
+# Display the final linked dataset in a table
+linked_data %>%
+  kable() %>%
+  kable_styling()
+```

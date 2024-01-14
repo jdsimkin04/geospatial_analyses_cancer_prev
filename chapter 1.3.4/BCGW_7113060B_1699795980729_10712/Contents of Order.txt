@@ -1,0 +1,14 @@
+------------------
+Order Details
+-----------------
+Order ID: 2326552
+Date: 20231112
+
+----------------------
+Feature Types
+-----------------------
+ - BCHA CMNTY HEALTH SERV AREA SP in directory CHSA
+
+----------------------------
+Packaged Products
+----------------------------

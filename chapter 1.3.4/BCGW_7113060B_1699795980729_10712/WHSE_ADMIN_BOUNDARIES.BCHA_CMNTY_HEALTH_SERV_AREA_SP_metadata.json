@@ -1,0 +1,146 @@
+[
+	{
+		"title" : "Community Health Service Areas - CHSA",
+		"name" : "community-health-service-areas-chsa",
+		"bcdc_data_resource_url" : "https://catalogue.data.gov.bc.ca/dataset/68f2f577-28a7-46b4-bca9-7e9770f2f357",
+		"description" : "Community Health Service Area (CHSA) boundaries; 2022 boundary configuration. \n\nThe CHSAs are a mutually exclusive and exhaustive classification of the land area in BC. CHSAs are contiguous (land area is geographically adjacent) and fit within the existing geographical hierarchy (cannot violate higher-level geography boundaries such as the Local Health Area). \n",
+		"purpose" : "The Community Health Service Areas (CHSAs) were created to produce a standard geographic definition for community-level analysis of health needs and service provision.\r\n",
+		"bcdc_type" : "Geographic",
+		"last_modified" : "2023-04-01T00:03:10",
+		"resource_storage_location" : "Bc Geographic Warehouse",
+		"object_name" : "WHSE_ADMIN_BOUNDARIES.BCHA_CMNTY_HEALTH_SERV_AREA_SP",
+		"object_short_name" : "CHSA",
+		"object_table_comments" : "The Community Health Service Areas (CHSAs) are a mutually exclusive classification of the land area in BC and fit within the existing geographical hierarchal boundaries of the Local Health Areas (LHAs), Health Service Delivery Areas (HSDAs), and Health Authorities (HAs). They are based on Census Dissemination Blocks.",
+		"projection_name" : "epsg3005",
+		"license_title" : "Open Government Licence - British Columbia",
+		"license_url" : "https://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61",
+		"details" : [
+			{
+				"data_precision" : 10,
+				"column_comments" : "Is the unique system generated primary key.",
+				"short_name" : "CHSA_SYSID",
+				"data_type" : "NUMBER",
+				"column_name" : "HLTH_CHSA_SYSID"
+			},
+			{
+				"data_precision" : 4,
+				"column_comments" : "Is the number of the Community Health Service Area, e.g., 1220, 2223, 4252.",
+				"short_name" : "CHSA_CD",
+				"data_type" : "CHAR",
+				"column_name" : "CMNTY_HLTH_SERV_AREA_CODE"
+			},
+			{
+				"data_precision" : 254,
+				"column_comments" : "Is the name of the Community Health Service Area, e.g., Nelson, Burnaby Southwest, Qualicum Beach.",
+				"short_name" : "CHSA_NM",
+				"data_type" : "VARCHAR2",
+				"column_name" : "CMNTY_HLTH_SERV_AREA_NAME"
+			},
+			{
+				"data_precision" : 30,
+				"column_comments" : "Is the class of the Community Heath Service Area, e.g., 6 Rural, 1 Metro, 4  Urban/Rural.",
+				"short_name" : "CHSA_UR_CL",
+				"data_type" : "VARCHAR2",
+				"column_name" : "CHSA_URBAN_RURAL_CLASS"
+			},
+			{
+				"data_precision" : 5,
+				"column_comments" : "Is the population of the Community Health Service Area base on census values.",
+				"short_name" : "CHSA_POP",
+				"data_type" : "NUMBER",
+				"column_name" : "CHSA_POPULATION_CENSUS"
+			},
+			{
+				"data_precision" : 3,
+				"column_comments" : "Is the number of the Local Health Area, e.g., 122, 222, 425.",
+				"short_name" : "LHA_CD",
+				"data_type" : "CHAR",
+				"column_name" : "LOCAL_HLTH_AREA_CODE"
+			},
+			{
+				"data_precision" : 254,
+				"column_comments" : "Is the name of the Local Health Area, e.g., Nelson, Burnaby, Oceanside.",
+				"short_name" : "LHA_NM",
+				"data_type" : "VARCHAR2",
+				"column_name" : "LOCAL_HLTH_AREA_NAME"
+			},
+			{
+				"data_precision" : 2,
+				"column_comments" : "Is the number of the Health Service Delivery Area, e.g., 12, 22, 42.",
+				"short_name" : "HSDA_CD",
+				"data_type" : "CHAR",
+				"column_name" : "HLTH_SERVICE_DLVR_AREA_CODE"
+			},
+			{
+				"data_precision" : 254,
+				"column_comments" : "Is the name of the Health Service Delivery Area, e.g., Kootenay Boundary, Fraser North, Central Vancouver Island.",
+				"short_name" : "HSDA_NM",
+				"data_type" : "VARCHAR2",
+				"column_name" : "HLTH_SERVICE_DLVR_AREA_NAME"
+			},
+			{
+				"data_precision" : 10,
+				"column_comments" : "Is the number and acronymn of the Health Service Delivery Area, e.g., 12 KB, 22 FN, 42 CVI.",
+				"short_name" : "HSDA_ID",
+				"data_type" : "VARCHAR2",
+				"column_name" : "HLTH_SERVICE_DLVR_AREA_ID"
+			},
+			{
+				"data_precision" : 1,
+				"column_comments" : "Is the number of the Health Authority, e.g., 1, 2, 3, 4, 5.",
+				"short_name" : "HA_CD",
+				"data_type" : "CHAR",
+				"column_name" : "HLTH_AUTHORITY_CODE"
+			},
+			{
+				"data_precision" : 254,
+				"column_comments" : "Is the name of the Health Authority, e.g., Interior, Fraser, Vancouver Coastal, Vancouver Island, Northern.",
+				"short_name" : "HA_NM",
+				"data_type" : "VARCHAR2",
+				"column_name" : "HLTH_AUTHORITY_NAME"
+			},
+			{
+				"data_precision" : 10,
+				"column_comments" : "Is the number and acronymn of the Health Authority, e.g., 1 IHA, 2 FHA, 3 VCH, 4 VIH, 5 NHA.",
+				"short_name" : "HA_ID",
+				"data_type" : "VARCHAR2",
+				"column_name" : "HLTH_AUTHORITY_ID"
+			},
+			{
+				"data_precision" : 19,
+				"column_comments" : "Is the system calculated area of a two-dimensional polygon in square meters",
+				"short_name" : "FEAT_AREA",
+				"data_type" : "NUMBER",
+				"column_name" : "FEATURE_AREA_SQM"
+			},
+			{
+				"data_precision" : 19,
+				"column_comments" : "Is the system calculated length or perimeter of a geometry in meters",
+				"short_name" : "FEAT_LEN",
+				"data_type" : "NUMBER",
+				"column_name" : "FEATURE_LENGTH_M"
+			},
+			{
+				"data_precision" : 1,
+				"column_comments" : "Is the column used to reference the spatial coordinates defining the feature.",
+				"short_name" : "SHAPE",
+				"data_type" : "SDO_GEOMETRY",
+				"column_name" : "SHAPE"
+			},
+			{
+				"data_precision" : 38,
+				"column_comments" : "Is a required attribute of feature classes and object classes in a geodatabase.",
+				"short_name" : "OBJECTID",
+				"data_type" : "NUMBER",
+				"column_name" : "OBJECTID"
+			},
+			{
+				"data_precision" : 4000,
+				"column_comments" : "Is a binary column used by spatial tools to store annotation, curve features and CAD data when using the SDO_GEOMETRY storage data type.",
+				"short_name" : null,
+				"data_type" : "BLOB",
+				"column_name" : "SE_ANNO_CAD_DATA"
+			}
+		]
+	}
+]
